@@ -1,4 +1,8 @@
 import React, { Component } from 'react';
+
+import injectTapEventPlugin from 'react-tap-event-plugin';
+injectTapEventPlugin();
+
 import logo from './logo.svg';
 import './App.scss';
 
