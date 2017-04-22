@@ -18,3 +18,6 @@ yarn-error.log*
 
 # css
 *.css
+
+# vscode
+.vscode
