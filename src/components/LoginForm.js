@@ -1,4 +1,7 @@
 import React, { Component } from 'react';
+import { browserHistory } from 'react-router';
+
+import Auth from '../services/Auth';
 
 import { TextField, RaisedButton } from 'material-ui';
 
@@ -13,6 +16,10 @@ const formStyle = {
         margin: '0 auto',
         width: '88px',
         marginTop: '25px'
+    },
+
+    error: {
+        margin: '0 auto',
     }
 };
 
@@ -23,10 +30,17 @@ export default class LoginForm extends Component {
         this.state = {
             username: null,
             password: null,
-            wasFailed: false
+            wasFailed: false,
+            errorMessage: null
         }
 
         this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    componentWillMount() {
+        if (Auth.isAuthenticated()) {
+            browserHistory.push('/');
+        }
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -66,6 +80,12 @@ export default class LoginForm extends Component {
 
         if (this.state.username && this.state.password) {
             // TODO: Auth
+            Auth.login(this.state.username, this.state.password).then((data) => {
+                browserHistory.push('/');
+            }).catch((err) => {
+                this.setState({ wasFailed: true, errorMessage: 'Wrong Username or Password'});
+            });
+
         } else {
             this.setState({ wasFailed: true });
         }
@@ -80,6 +100,11 @@ export default class LoginForm extends Component {
         let requirePassword;
         if (this.state.wasFailed && !this.state.password) {
             requirePassword = 'Password is required!';
+        }
+
+        let errorMessage;
+        if (this.state.wasFailed && this.state.errorMessage) {
+            errorMessage = <div style={formStyle.error}>{this.state.errorMessage}</div>;
         }
 
         return (
@@ -108,6 +133,8 @@ export default class LoginForm extends Component {
                     label="Sign in" 
                     primary={true} 
                 />
+
+                {errorMessage}
             </form>
         );
     }
