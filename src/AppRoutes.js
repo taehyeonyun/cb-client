@@ -3,7 +3,8 @@ import { Route } from 'react-router';
 
 import {
     Home,
-    LoginForm
+    LoginForm,
+    NoMatch
 } from './components';
 
 import Auth from './services/Auth';
@@ -17,5 +18,6 @@ export default (
             replace('/login');
             callback();
         }}/>
+        <Route path='*' component={NoMatch}/>
     </Route>
 );

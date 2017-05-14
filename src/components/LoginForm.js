@@ -3,6 +3,8 @@ import { browserHistory } from 'react-router';
 
 import Auth from '../services/Auth';
 
+import Url from './Loginform/Url'
+
 import { TextField, RaisedButton } from 'material-ui';
 
 const formStyle = {
@@ -31,7 +33,8 @@ export default class LoginForm extends Component {
             username: null,
             password: null,
             wasFailed: false,
-            errorMessage: null
+            errorMessage: null,
+            url: null
         }
 
         this.handleSubmit = this.handleSubmit.bind(this);
@@ -75,12 +78,19 @@ export default class LoginForm extends Component {
         });
     }
 
+    handleUrlChange = (url) => {
+        this.setState({
+            url: url
+        }, function () {
+                console.log(this.state.url);
+            });
+    }
+    
     handleSubmit(event) {
         event.preventDefault();
 
         if (this.state.username && this.state.password) {
-            // TODO: Auth
-            Auth.login(this.state.username, this.state.password).then((data) => {
+            Auth.login(this.state.username, this.state.password, this.state.url).then((data) => {
                 browserHistory.push('/');
             }).catch((err) => {
                 this.setState({ wasFailed: true, errorMessage: 'Wrong Username or Password'});
@@ -126,6 +136,11 @@ export default class LoginForm extends Component {
                     errorText={requirePassword}
                     onChange={this.handlePasswordChange}
                 />
+
+                 <Url 
+                    wasFailed={this.state.wasFailed}
+                    handleUrlChange={this.handleUrlChange}
+                 />
 
                 <RaisedButton
                     style={formStyle.button}
