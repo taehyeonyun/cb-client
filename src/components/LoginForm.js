@@ -3,9 +3,11 @@ import { browserHistory } from 'react-router';
 
 import Auth from '../services/Auth';
 
-import Url from './Loginform/Url'
+//import Url from './Loginform/Url'
 
-import { TextField, RaisedButton } from 'material-ui';
+//import Dialog from './Dialog/Dialog'
+
+import { TextField, RaisedButton, MenuItem, DropDownMenu } from 'material-ui';
 
 const formStyle = {
     input: {
@@ -34,11 +36,13 @@ export default class LoginForm extends Component {
             password: null,
             wasFailed: false,
             errorMessage: null,
-            url: null
+            protocol: 1,
+            address: null,
+            url: "http://0.0.0.0"
         }
 
         this.handleSubmit = this.handleSubmit.bind(this);
-    }
+    }  
 
     componentWillMount() {
         if (Auth.isAuthenticated()) {
@@ -63,7 +67,18 @@ export default class LoginForm extends Component {
             return true;
         }
 
-        return false;
+        if ((this.state.address !== nextState.address) &&
+           !(this.state.address && nextState.address))
+        {
+            return true;
+        }
+
+
+        if (this.state.protocol !== nextState.protocol){
+            return true;
+        }
+
+        return true;
     }
 
     handleUsernameChange = (e) => {
@@ -78,12 +93,33 @@ export default class LoginForm extends Component {
         });
     }
 
-    handleUrlChange = (url) => {
+    handleUrlChange = () => {
+        let cburl = null;
+        if (this.state.protocol === 1) {
+            cburl = 'http://';
+        } else {
+            cburl = 'https://';
+        }
+        cburl += this.state.address;
+
         this.setState({
-            url: url
+            url: cburl
         }, function () {
                 console.log(this.state.url);
             });
+    }
+
+    handleAdressChange = (e) => {
+        this.setState({ address: e.target.value }, function () {
+            this.handleUrlChange();
+        });
+
+    }
+
+    handleProtocolChange = (event, index, value) => {
+        this.setState({protocol : value}, function () {
+            this.handleUrlChange();
+        });
     }
     
     handleSubmit(event) {
@@ -93,14 +129,15 @@ export default class LoginForm extends Component {
             Auth.login(this.state.username, this.state.password, this.state.url).then((data) => {
                 browserHistory.push('/');
             }).catch((err) => {
-                this.setState({ wasFailed: true, errorMessage: 'Wrong Username or Password'});
+                console.log("request error:"+err)
+                this.setState({ wasFailed: true, errorMessage: 'Wrong Username or Password or Url'});
             });
 
         } else {
             this.setState({ wasFailed: true });
         }
     }
-
+    
     render() {
         let requireUsername;
         if (this.state.wasFailed && !this.state.username) {
@@ -110,6 +147,11 @@ export default class LoginForm extends Component {
         let requirePassword;
         if (this.state.wasFailed && !this.state.password) {
             requirePassword = 'Password is required!';
+        }
+        
+        let requireAddress;
+        if (this.state.wasFailed && !this.state.address) {
+            requireAddress = 'Address is required!';
         }
 
         let errorMessage;
@@ -137,10 +179,18 @@ export default class LoginForm extends Component {
                     onChange={this.handlePasswordChange}
                 />
 
-                 <Url 
-                    wasFailed={this.state.wasFailed}
-                    handleUrlChange={this.handleUrlChange}
-                 />
+                 <DropDownMenu value={this.state.protocol} onChange={this.handleProtocolChange}>
+                    <MenuItem value={1} primaryText="http://" />
+                    <MenuItem value={2} primaryText="https://" />
+                </DropDownMenu>
+        
+                <TextField
+                    label="url"
+                    floatingLabelText="url"
+                    floatingLabelFixed={true}
+                    errorText={requireAddress}
+                    onChange={this.handleAdressChange}
+                />
 
                 <RaisedButton
                     style={formStyle.button}
